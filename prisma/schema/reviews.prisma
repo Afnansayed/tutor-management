@@ -1,0 +1,14 @@
+model Reviews {
+    id String @id @default(uuid())
+    booking_id String @unique
+    booking Bookings @relation(fields: [booking_id], references: [id])
+    tutor_id String
+    tutor TutorProfile @relation(fields: [tutor_id], references: [id])
+    student_id String
+    student User @relation(fields: [student_id], references: [id])
+    rating Float @default(0.0)
+    comment String @db.Text
+    isApproved Boolean @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

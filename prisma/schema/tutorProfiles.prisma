@@ -1,0 +1,19 @@
+model TutorProfile {
+    id  String @id @default(uuid())
+    user_id String  @unique
+    user User @relation(fields: [user_id], references: [id])
+    bio String @db.Text
+    profile_picture String?
+    hourly_rate Float  @default(0.0)
+    categories    TutorCategory[]
+    total_reviews Int @default(0)
+    average_rating Float @default(0.0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    tutor_schedules TutorSchedule[]
+    bookings Bookings[]  @relation("tutorBookings")
+    reviews Reviews[]
+
+    @@index([user_id])
+    @@index([average_rating])
+}

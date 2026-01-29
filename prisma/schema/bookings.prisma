@@ -1,0 +1,24 @@
+model Bookings {
+    id String @id @default(uuid())
+    tutor_id String
+    tutor TutorProfile @relation("tutorBookings",fields: [tutor_id], references: [id])
+    student_id String
+    student User @relation("studentBookings",fields: [student_id], references: [id])
+    schedule_id String
+    tutor_schedule TutorSchedule @relation(fields: [schedule_id], references: [id])
+    booking_date DateTime
+    status BookingStatus @default(CONFIRMED)
+    total_price Float @default(0.0)
+    session_link String?
+    trakking_code String @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    review Reviews?
+}
+
+
+enum BookingStatus {
+    CONFIRMED
+    CANCELLED
+    COMPLETED
+}
