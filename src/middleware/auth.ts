@@ -17,7 +17,8 @@ declare global {
 
 export enum UserRole {
   ADMIN = 'ADMIN',
-  STUDENT = 'STUDENT'
+  STUDENT = 'STUDENT',
+  TUTOR = 'TUTOR',
 }
 
 const auth = (...roles: UserRole[]) => {

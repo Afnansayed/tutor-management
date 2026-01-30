@@ -10,11 +10,22 @@ router.post(
   categoryController.createCategory
 );
 
-router.get('/category', auth(UserRole.ADMIN), categoryController.getCategory);
-router.delete(
-  '/category:id',
+router.get(
+  '/category',
+  auth(UserRole.ADMIN, UserRole.TUTOR),
+  categoryController.getCategory
+);
+
+router.get(
+  '/category/:category_id',
+  auth(UserRole.ADMIN, UserRole.TUTOR),
+  categoryController.getCategoryById
+);
+
+router.patch(
+  '/category/:category_id',
   auth(UserRole.ADMIN),
-  categoryController.deleteCategory
+  categoryController.updateCategory
 );
 
 export const categoryRouter = router;

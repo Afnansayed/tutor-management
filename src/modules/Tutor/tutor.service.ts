@@ -1,7 +1,6 @@
 import { TutorProfile } from '../../../generated/prisma/client';
 import { prisma } from '../../lib/prisma';
 
-
 interface CreateTutor {
   user_id: string;
   bio: string;
@@ -10,16 +9,14 @@ interface CreateTutor {
   categoryIds: string[];
 }
 
-const createTutorProfile = async (
-  data: CreateTutor,
-) => {
-const { categoryIds, ...profileData } = data;
+const createTutorProfile = async (data: CreateTutor) => {
+  const { categoryIds, ...profileData } = data;
 
   const result = await prisma.tutorProfile.create({
     data: {
       ...profileData,
       categories: {
-        create: categoryIds.map((id) => ({
+        create: categoryIds.map(id => ({
           category: {
             connect: { id: id },
           },
@@ -32,19 +29,26 @@ const { categoryIds, ...profileData } = data;
   });
   return result;
 };
+
 const getTutorProfiles = async () => {
   const result = await prisma.tutorProfile.findMany({
     include: {
-      categories:{
+      categories: {
         select: {
-          category:{
+          category: {
             select: {
               name: true,
-              sub_code: true
-            }
-          }
-        }
-      }
+              sub_code: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
     },
   });
   return result;
@@ -69,5 +73,5 @@ const deleteTutorProfiles = async (tutor_id: string) => {
 
 export const tutorService = {
   createTutorProfile,
-  getTutorProfiles
+  getTutorProfiles,
 };
