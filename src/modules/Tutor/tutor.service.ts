@@ -1,4 +1,4 @@
-import { TutorProfile } from '../../../generated/prisma/client';
+import { Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
 interface CreateTutor {
@@ -9,8 +9,17 @@ interface CreateTutor {
   categoryIds: string[];
 }
 
-const createTutorProfile = async (data: CreateTutor) => {
+const createTutorProfile = async (data: CreateTutor, res: Response) => {
   const { categoryIds, ...profileData } = data;
+
+  if (!categoryIds || !Array.isArray(categoryIds) || categoryIds.length === 0) {
+    return res
+      .status(400)
+      .json({
+        message:
+          'At least one category must be provided as an array categoryIds[]',
+      });
+  }
 
   const result = await prisma.tutorProfile.create({
     data: {
