@@ -10,5 +10,12 @@ router.post(
   tutorController.createTutorProfile
 );
 router.get('/tutor-profile', tutorController.getAllTutorProfiles);
+router.get(
+  '/tutor-profile/me',
+  auth(UserRole.TUTOR),
+  tutorController.getMyProfile
+);
+
+router.get('/tutor-profile/:profileId', tutorController.getProfileById);
 
 export const tutorProfileRouter = router;

@@ -13,12 +13,10 @@ const createTutorProfile = async (data: CreateTutor, res: Response) => {
   const { categoryIds, ...profileData } = data;
 
   if (!categoryIds || !Array.isArray(categoryIds) || categoryIds.length === 0) {
-    return res
-      .status(400)
-      .json({
-        message:
-          'At least one category must be provided as an array categoryIds[]',
-      });
+    return res.status(400).json({
+      message:
+        'At least one category must be provided as an array categoryIds[]',
+    });
   }
 
   const result = await prisma.tutorProfile.create({
@@ -62,25 +60,72 @@ const getTutorProfiles = async () => {
   });
   return result;
 };
-// const getTutorProfilesById = async (user_id: string) => {
-//   const result = await prisma.tutorProfile.findUnique({
-//     where: {
-
-//     },
-//   });
-//   return result;
-// };
-
-const deleteTutorProfiles = async (tutor_id: string) => {
-  const result = await prisma.tutorProfile.delete({
+const getMyProfile = async (user_id: string) => {
+  const result = await prisma.tutorProfile.findUnique({
     where: {
-      id: tutor_id,
+      user_id: user_id,
+    },
+    include: {
+      categories: {
+        select: {
+          category: {
+            select: {
+              name: true,
+              sub_code: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
     },
   });
-  return result;
+  return result
+    ? {
+        ...result,
+        categories: result.categories.map(cat => cat.category),
+      }
+    : null;
+};
+const getProfileById = async (profile_id: string) => {
+  const result = await prisma.tutorProfile.findUnique({
+    where: {
+      id: profile_id,
+    },
+    include: {
+      categories: {
+        select: {
+          category: {
+            select: {
+              name: true,
+              sub_code: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+  return result
+    ? {
+        ...result,
+        categories: result.categories.map(cat => cat.category),
+      }
+    : null;
 };
 
 export const tutorService = {
   createTutorProfile,
   getTutorProfiles,
+  getMyProfile,
+  getProfileById,
 };
