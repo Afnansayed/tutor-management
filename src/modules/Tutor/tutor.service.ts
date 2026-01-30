@@ -60,6 +60,7 @@ const getTutorProfiles = async () => {
   });
   return result;
 };
+
 const getMyProfile = async (user_id: string) => {
   const result = await prisma.tutorProfile.findUnique({
     where: {
@@ -91,6 +92,7 @@ const getMyProfile = async (user_id: string) => {
       }
     : null;
 };
+
 const getProfileById = async (profile_id: string) => {
   const result = await prisma.tutorProfile.findUnique({
     where: {
@@ -123,9 +125,60 @@ const getProfileById = async (profile_id: string) => {
     : null;
 };
 
+const updateTutorProfile = async (
+  profileId: string,
+  data: Partial<CreateTutor & { name?: string; email?: string }>
+) => {
+  const { categoryIds, name, email, user_id, ...rest } = data;
+  const result = await prisma.tutorProfile.update({
+    where: {
+      id: profileId,
+    },
+    data: {
+      ...rest,
+      user: {
+        update: {
+          ...(name && { name }),
+          ...(email && { email }),
+        },
+      },
+      ...(categoryIds && {
+        categories: {
+          deleteMany: {},
+          create: categoryIds.map(id => ({
+            category: {
+              connect: { id: id },
+            },
+          })),
+        },
+      }),
+    },
+    include: {
+      categories: {
+        include: {
+          category: {
+            select: {
+              name: true,
+              sub_code: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+  return result;
+};
+
 export const tutorService = {
   createTutorProfile,
   getTutorProfiles,
   getMyProfile,
   getProfileById,
+  updateTutorProfile,
 };

@@ -17,5 +17,10 @@ router.get(
 );
 
 router.get('/tutor-profile/:profileId', tutorController.getProfileById);
+router.patch(
+  '/tutor-profile/:profileId',
+  auth(UserRole.TUTOR),
+  tutorController.updateTutorProfile
+);
 
 export const tutorProfileRouter = router;

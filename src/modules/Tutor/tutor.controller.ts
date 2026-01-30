@@ -79,10 +79,33 @@ const getProfileById = async (
     next(error);
   }
 };
+const updateTutorProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const profileId = req.params.profileId;
+    if (!profileId) {
+      return res.status(400).json({ message: 'Profile ID is required' });
+    }
+    const result = await tutorService.updateTutorProfile(
+      profileId as string,
+      req.body
+    );
+    res.status(201).json({
+      message: 'Profile updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const tutorController = {
   createTutorProfile,
   getAllTutorProfiles,
   getMyProfile,
   getProfileById,
+  updateTutorProfile,
 };
