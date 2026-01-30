@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { TutorProfileWhereInput } from '../../../generated/prisma/models';
 
 interface CreateTutor {
   user_id: string;
@@ -37,8 +38,45 @@ const createTutorProfile = async (data: CreateTutor, res: Response) => {
   return result;
 };
 
-const getTutorProfiles = async () => {
+const getTutorProfiles = async ({
+  search,
+  page,
+  limit,
+  skip,
+  sortBy,
+  sortOrder,
+}: {
+  search: string | undefined;
+  limit: number;
+  page: number;
+  skip: number;
+  sortBy: string;
+  sortOrder: string;
+}) => {
+  const andConditions: TutorProfileWhereInput[] = [];
+
+  if (search) {
+    andConditions.push({
+      OR: [
+        { user: { name: { contains: search, mode: 'insensitive' } } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        {
+          categories: {
+            some: {
+              category: { name: { contains: search, mode: 'insensitive' } },
+            },
+          },
+        },
+      ],
+    });
+  }
+
   const result = await prisma.tutorProfile.findMany({
+    where: {
+      AND: andConditions,
+    },
+    take: limit,
+    skip,
     include: {
       categories: {
         select: {
@@ -57,8 +95,24 @@ const getTutorProfiles = async () => {
         },
       },
     },
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
   });
-  return result;
+
+  const totalCount = await prisma.tutorProfile.count();
+  return {
+    meta: {
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+    data: result.map(profile => ({
+      ...profile,
+      categories: profile.categories.map(cat => cat.category),
+    })),
+  };
 };
 
 const getMyProfile = async (user_id: string) => {
