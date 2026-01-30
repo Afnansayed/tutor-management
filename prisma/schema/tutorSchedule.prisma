@@ -1,10 +1,10 @@
 model TutorSchedule {
     id String @id @default(uuid())
-    tutorId String
-    tutor TutorProfile @relation(fields: [tutorId], references: [id])
-    day_Of_Week DaysOfWeek 
-    startTime   String
-    endTime   String
+    tutor_id String
+    tutor TutorProfile @relation(fields: [tutor_id], references: [user_id])
+    day_of_week DaysOfWeek 
+    start_time   String
+    end_time   String
     isAvailable Boolean @default(true)
     isActive Boolean @default(true)
     createdAt DateTime @default(now())

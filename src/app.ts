@@ -5,6 +5,7 @@ import cors from 'cors';
 import errorHandler from './middleware/globalErrorHandler';
 import { tutorProfileRouter } from './modules/Tutor/tutor.router';
 import { categoryRouter } from './modules/category/category.router';
+import { tutorScheduleRouter } from './modules/tutorSchedule/tutorSchedule.router';
 
 const app: Application = express();
 
@@ -22,11 +23,12 @@ app.get('/', (req, res) => {
 
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
-//category 
-app.use('/api/v1' , categoryRouter)
+//category
+app.use('/api/v1', categoryRouter);
 //tutor profile
-app.use('/api/v1' , tutorProfileRouter)
-
+app.use('/api/v1', tutorProfileRouter);
+// tutor schedule
+app.use('/api/v1', tutorScheduleRouter);
 
 // error handler
 app.use(errorHandler);

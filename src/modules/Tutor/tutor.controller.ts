@@ -9,7 +9,6 @@ const createTutorProfile = async (
 ) => {
   try {
     const userId = req.user?.id;
-    console.log({ userId });
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
