@@ -25,6 +25,12 @@ router.patch(
   auth(UserRole.TUTOR),
   tutorScheduleController.updateTutorSchedule
 );
+router.patch(
+  '/tutor-schedule/:scheduleId/availability',
+  auth(UserRole.TUTOR),
+  tutorScheduleController.updateTutorScheduleAvailability
+);
+
 router.delete(
   '/tutor-schedule/:scheduleId',
   auth(UserRole.TUTOR, UserRole.ADMIN),

@@ -89,6 +89,28 @@ const updateTutorSchedule = async (
     next(error);
   }
 };
+const updateTutorScheduleAvailability = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const scheduleId = req.params.scheduleId;
+    if (!scheduleId) {
+      return res.status(400).json({ message: 'Schedule ID is required' });
+    }
+    const result = await tutorScheduleService.updateTutorScheduleAvailability(
+      scheduleId as string,
+      req.body.isAvailable
+    );
+    res.status(200).json({
+      message: 'Tutor schedule availability updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 const deleteTutorSchedule = async (
   req: Request,
   res: Response,
@@ -117,4 +139,5 @@ export const tutorScheduleController = {
   getTutorScheduleById,
   updateTutorSchedule,
   deleteTutorSchedule,
+  updateTutorScheduleAvailability,
 };

@@ -41,6 +41,14 @@ const updateTutorSchedule = async (
   });
 };
 
+
+const updateTutorScheduleAvailability = async (scheduleId: string, isAvailable: boolean) => {
+  return await prisma.tutorSchedule.update({
+    where: { id: scheduleId },
+    data: { isAvailable },
+  });
+};
+
 const deleteTutorSchedule = async (scheduleId: string) => {
   return await prisma.tutorSchedule.delete({
     where: { id: scheduleId },
@@ -53,4 +61,5 @@ export const tutorScheduleService = {
   getTutorScheduleById,
   updateTutorSchedule,
   deleteTutorSchedule,
+  updateTutorScheduleAvailability,
 };
