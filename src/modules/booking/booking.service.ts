@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { Bookings } from "../../../generated/prisma/client";
+import { Bookings, BookingStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const createBooking = async (
@@ -57,15 +57,57 @@ const createBooking = async (
   return result;
 };
 
-// const getTutorBookings = async (tutor_id: string) => {
-//   return await prisma.bookings.findMany({
-//     where: { tutor_id },
-//     include: { student: true, tutor_schedule: true },
-//     orderBy: { createdAt: 'desc' }
-//   });
-// };
+const getAllBookings= async () => {
+  const result = await prisma.bookings.findMany({
+    include: { student: true, tutor_schedule: true },
+    orderBy: { createdAt: 'desc' }
+  });
+  return result;
+};
+const getTutorBookings= async (tutor_id: string) => {
+  const result = await prisma.bookings.findMany({
+    where: { tutor_id },
+    include: { student: true, tutor_schedule: true },
+    orderBy: { createdAt: 'desc' }
+  });
+  return result;
+};
+const getStudentBookings = async (student_id: string) => {
+  const result = await prisma.bookings.findMany({
+    where: { student_id },
+    include: { student: true, tutor_schedule: true },
+    orderBy: { createdAt: 'desc' }
+  });
+  return result;
+};
+
+const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
+   if(status === 'CANCELLED' || status === 'COMPLETED') {
+    return  await prisma.$transaction(async (tx) => {
+    const booking = await tx.bookings.update({
+      where: { id: bookingId },
+      data: { status: 'CANCELLED' }
+    });
+
+    await tx.tutorSchedule.update({
+      where: { id: booking.schedule_id },
+      data: { isAvailable: true }
+    });
+
+    return booking;
+  });
+    }
+
+  return await prisma.bookings.update({
+    where: { id: bookingId },
+    data: { status }
+  });
+};
 
 export const bookingService = {
   createBooking,
-//   getTutorBookings
+  getAllBookings,
+  getTutorBookings,
+  getStudentBookings,
+  updateBookingStatus
 };
