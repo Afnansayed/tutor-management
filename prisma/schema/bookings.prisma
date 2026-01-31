@@ -1,7 +1,7 @@
 model Bookings {
     id String @id @default(uuid())
     tutor_id String
-    tutor TutorProfile @relation("tutorBookings",fields: [tutor_id], references: [id])
+    tutor TutorProfile @relation("tutorBookings",fields: [tutor_id], references: [user_id])
     student_id String
     student User @relation("studentBookings",fields: [student_id], references: [id])
     schedule_id String

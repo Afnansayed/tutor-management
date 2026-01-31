@@ -6,6 +6,7 @@ import errorHandler from './middleware/globalErrorHandler';
 import { tutorProfileRouter } from './modules/Tutor/tutor.router';
 import { categoryRouter } from './modules/category/category.router';
 import { tutorScheduleRouter } from './modules/tutorSchedule/tutorSchedule.router';
+import { bookingRouter } from './modules/booking/booking.router';
 
 const app: Application = express();
 
@@ -29,6 +30,8 @@ app.use('/api/v1', categoryRouter);
 app.use('/api/v1', tutorProfileRouter);
 // tutor schedule
 app.use('/api/v1', tutorScheduleRouter);
+// tutor booking
+app.use('/api/v1', bookingRouter);
 
 // error handler
 app.use(errorHandler);

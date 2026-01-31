@@ -3,7 +3,7 @@ model Reviews {
     booking_id String @unique
     booking Bookings @relation(fields: [booking_id], references: [id])
     tutor_id String
-    tutor TutorProfile @relation(fields: [tutor_id], references: [id])
+    tutor TutorProfile @relation(fields: [tutor_id], references: [user_id])
     student_id String
     student User @relation(fields: [student_id], references: [id])
     rating Float @default(0.0)
