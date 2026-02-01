@@ -1,6 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import { bookingService } from "./booking.service";
-
+import { NextFunction, Request, Response } from 'express';
+import { bookingService } from './booking.service';
 
 const createBooking = async (
   req: Request,
@@ -85,13 +84,16 @@ const updateBookingStatus = async (
   next: NextFunction
 ) => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = req.params.bookingId;
     if (!bookingId) {
       return res.status(400).json({ message: 'Booking ID is required' });
     }
     const { status } = req.body;
-   
-    const result = await bookingService.updateBookingStatus(bookingId as string, status);
+
+    const result = await bookingService.updateBookingStatus(
+      bookingId as string,
+      status
+    );
     res.status(200).json({
       message: 'Booking status updated successfully',
       data: result,
@@ -102,12 +104,10 @@ const updateBookingStatus = async (
   }
 };
 
-
-
-export const bookingController = { 
-    createBooking,
-    getAllBookings,
-    getTutorBookings,
-    getStudentBookings,
-    updateBookingStatus
+export const bookingController = {
+  createBooking,
+  getAllBookings,
+  getTutorBookings,
+  getStudentBookings,
+  updateBookingStatus,
 };
