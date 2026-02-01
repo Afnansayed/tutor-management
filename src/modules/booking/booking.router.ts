@@ -10,16 +10,16 @@ router.post(
   bookingController.createBooking
 );
 
-router.get('/bookings', auth(UserRole.ADMIN), bookingController.getAllBookings);
+router.get('/booking', auth(UserRole.ADMIN), bookingController.getAllBookings);
 
 router.get(
-  '/bookings/tutor',
+  '/booking/tutor',
   auth(UserRole.TUTOR),
   bookingController.getTutorBookings
 );
 
 router.get(
-  '/bookings/student',
+  '/booking/student',
   auth(UserRole.STUDENT),
   bookingController.getStudentBookings
 );
