@@ -7,6 +7,7 @@ import { tutorProfileRouter } from './modules/Tutor/tutor.router';
 import { categoryRouter } from './modules/category/category.router';
 import { tutorScheduleRouter } from './modules/tutorSchedule/tutorSchedule.router';
 import { bookingRouter } from './modules/booking/booking.router';
+import { reviewRouter } from './modules/review/review.router';
 
 const app: Application = express();
 
@@ -32,6 +33,8 @@ app.use('/api/v1', tutorProfileRouter);
 app.use('/api/v1', tutorScheduleRouter);
 // tutor booking
 app.use('/api/v1', bookingRouter);
+// review booking
+app.use('/api/v1', reviewRouter);
 
 // error handler
 app.use(errorHandler);
