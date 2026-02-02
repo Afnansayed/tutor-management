@@ -8,7 +8,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler", // bundler for tsup, node16 for nodejs
     "target": "ES2023",
     "types": [],
     // For nodejs:
