@@ -8,6 +8,7 @@ import { categoryRouter } from './modules/category/category.router';
 import { tutorScheduleRouter } from './modules/tutorSchedule/tutorSchedule.router';
 import { bookingRouter } from './modules/booking/booking.router';
 import { reviewRouter } from './modules/review/review.router';
+import { notFound } from './middleware/notFound';
 
 const app: Application = express();
 
@@ -38,5 +39,8 @@ app.use('/api/v1', reviewRouter);
 
 // error handler
 app.use(errorHandler);
+
+//not found route
+app.use(notFound);
 
 export default app;
