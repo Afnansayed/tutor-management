@@ -125,6 +125,7 @@ const getMyProfile = async (user_id: string) => {
         select: {
           category: {
             select: {
+              id: true,
               name: true,
               sub_code: true,
             },
@@ -133,6 +134,7 @@ const getMyProfile = async (user_id: string) => {
       },
       user: {
         select: {
+          id: true,
           name: true,
           email: true,
         },

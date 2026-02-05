@@ -572,6 +572,7 @@ var getMyProfile = async (user_id) => {
         select: {
           category: {
             select: {
+              id: true,
               name: true,
               sub_code: true
             }
@@ -580,6 +581,7 @@ var getMyProfile = async (user_id) => {
       },
       user: {
         select: {
+          id: true,
           name: true,
           email: true
         }
