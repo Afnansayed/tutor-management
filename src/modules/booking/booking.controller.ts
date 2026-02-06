@@ -22,6 +22,7 @@ const createBooking = async (
     next(error);
   }
 };
+
 const getAllBookings = async (
   req: Request,
   res: Response,
@@ -38,6 +39,27 @@ const getAllBookings = async (
     next(error);
   }
 };
+const getBookingById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const booking_id = req.params?.bookingId;
+    if (!booking_id) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const result = await bookingService.getBookingById(booking_id as string);
+    res.status(200).json({
+      message: 'Bookings retrieved successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 const getTutorBookings = async (
   req: Request,
   res: Response,
@@ -110,4 +132,5 @@ export const bookingController = {
   getTutorBookings,
   getStudentBookings,
   updateBookingStatus,
+  getBookingById
 };

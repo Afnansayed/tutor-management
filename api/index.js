@@ -1236,6 +1236,13 @@ var getStudentBookings = async (student_id) => {
   });
   return result;
 };
+var getBookingById = async (booking_id) => {
+  const result = await prisma.bookings.findUnique({
+    where: { id: booking_id },
+    include: { student: true, tutor_schedule: true }
+  });
+  return result;
+};
 var updateBookingStatus = async (bookingId, status) => {
   if (status === "CANCELLED" || status === "COMPLETED") {
     return await prisma.$transaction(async (tx) => {
@@ -1260,7 +1267,8 @@ var bookingService = {
   getAllBookings,
   getTutorBookings,
   getStudentBookings,
-  updateBookingStatus
+  updateBookingStatus,
+  getBookingById
 };
 
 // src/modules/booking/booking.controller.ts
@@ -1284,6 +1292,22 @@ var createBooking2 = async (req, res, next) => {
 var getAllBookings2 = async (req, res, next) => {
   try {
     const result = await bookingService.getAllBookings();
+    res.status(200).json({
+      message: "Bookings retrieved successfully",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var getBookingById2 = async (req, res, next) => {
+  try {
+    const booking_id = req.params?.bookingId;
+    if (!booking_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const result = await bookingService.getBookingById(booking_id);
     res.status(200).json({
       message: "Bookings retrieved successfully",
       data: result
@@ -1350,7 +1374,8 @@ var bookingController = {
   getAllBookings: getAllBookings2,
   getTutorBookings: getTutorBookings2,
   getStudentBookings: getStudentBookings2,
-  updateBookingStatus: updateBookingStatus2
+  updateBookingStatus: updateBookingStatus2,
+  getBookingById: getBookingById2
 };
 
 // src/modules/booking/booking.router.ts
@@ -1371,6 +1396,7 @@ router4.get(
   auth_default("STUDENT" /* STUDENT */),
   bookingController.getStudentBookings
 );
+router4.get("/booking/:bookingId", auth_default("ADMIN" /* ADMIN */, "STUDENT" /* STUDENT */, "TUTOR" /* TUTOR */), bookingController.getBookingById);
 router4.patch(
   "/booking/:bookingId/status",
   auth_default("TUTOR" /* TUTOR */, "STUDENT" /* STUDENT */, "ADMIN" /* ADMIN */),

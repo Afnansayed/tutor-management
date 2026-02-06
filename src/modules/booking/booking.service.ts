@@ -84,6 +84,14 @@ const getStudentBookings = async (student_id: string) => {
   return result;
 };
 
+const getBookingById = async (booking_id: string) => {
+  const result = await prisma.bookings.findUnique({
+    where: {id: booking_id },
+    include: { student: true, tutor_schedule: true }
+  });
+  return result;
+};
+
 const updateBookingStatus = async (
   bookingId: string,
   status: BookingStatus
@@ -116,4 +124,5 @@ export const bookingService = {
   getTutorBookings,
   getStudentBookings,
   updateBookingStatus,
+  getBookingById
 };

@@ -48,7 +48,7 @@ const auth = (...roles: UserRole[]) => {
       emailVerified: session.user.emailVerified,
       role: session.user.role as string,
     };
-
+    // console.log(req.user.role ,'from middleware');
     if (roles.length && !roles.includes(req.user.role as UserRole)) {
       return res.status(403).json({
         success: false,

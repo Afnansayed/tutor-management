@@ -12,6 +12,7 @@ router.post(
 
 router.get('/booking', auth(UserRole.ADMIN), bookingController.getAllBookings);
 
+
 router.get(
   '/booking/tutor',
   auth(UserRole.TUTOR),
@@ -24,10 +25,14 @@ router.get(
   bookingController.getStudentBookings
 );
 
+router.get('/booking/:bookingId', auth(UserRole.ADMIN,UserRole.STUDENT,UserRole.TUTOR), bookingController.getBookingById);
+
 router.patch(
   '/booking/:bookingId/status',
   auth(UserRole.TUTOR, UserRole.STUDENT, UserRole.ADMIN),
   bookingController.updateBookingStatus
 );
+
+
 
 export const bookingRouter = router;
