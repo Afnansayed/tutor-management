@@ -61,7 +61,17 @@ const createBooking = async (
 
 const getAllBookings = async () => {
   const result = await prisma.bookings.findMany({
-    include: { student: true, tutor_schedule: true },
+    include: { student: true, tutor_schedule: true , tutor: {
+      select: {
+        profile_picture: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    }, },
     orderBy: { createdAt: 'desc' },
   });
   return result;
@@ -78,7 +88,20 @@ const getTutorBookings = async (tutor_id: string) => {
 const getStudentBookings = async (student_id: string) => {
   const result = await prisma.bookings.findMany({
     where: { student_id },
-    include: { student: true, tutor_schedule: true },
+    include: { 
+      tutor: {
+        select: {
+          profile_picture: true,
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
+          }
+        }
+      },
+      tutor_schedule: true,
+    },
     orderBy: { createdAt: 'desc' },
   });
   return result;
@@ -87,7 +110,23 @@ const getStudentBookings = async (student_id: string) => {
 const getBookingById = async (booking_id: string) => {
   const result = await prisma.bookings.findUnique({
     where: {id: booking_id },
-    include: { student: true, tutor_schedule: true }
+    include: { student: true, tutor: {
+      select: {
+        profile_picture: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    }, tutor_schedule: true , review: {
+      select: {
+        rating: true,
+        comment: true,
+        isApproved: true
+      }
+    } }
   });
   return result;
 };
