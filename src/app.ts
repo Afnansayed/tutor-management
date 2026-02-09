@@ -9,6 +9,7 @@ import { tutorScheduleRouter } from './modules/tutorSchedule/tutorSchedule.route
 import { bookingRouter } from './modules/booking/booking.router';
 import { reviewRouter } from './modules/review/review.router';
 import { notFound } from './middleware/notFound';
+import { authRouter } from './modules/Auth/auth.router';
 
 const app: Application = express();
 
@@ -26,6 +27,8 @@ app.get('/', (req, res) => {
 
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
+// auth
+app.use('/api/v1', authRouter);
 //category
 app.use('/api/v1', categoryRouter);
 //tutor profile

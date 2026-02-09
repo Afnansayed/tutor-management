@@ -5,7 +5,7 @@ var __export = (target, all) => {
 };
 
 // src/app.ts
-import express6 from "express";
+import express7 from "express";
 import { toNodeHandler } from "better-auth/node";
 
 // src/lib/auth.ts
@@ -1703,9 +1703,105 @@ function notFound(req, res) {
   });
 }
 
+// src/modules/Auth/auth.router.ts
+import express6 from "express";
+
+// src/modules/Auth/auth.service.ts
+var getAllUser = async (role) => {
+  return await prisma.user.findMany({
+    where: {
+      ...role ? { role } : {}
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      status: true,
+      createdAt: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+};
+var updateUserStatus = async (userId, status) => {
+  const existUser = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+  if (!existUser) {
+    throw new Error("User not found");
+  }
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { status },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      status: true
+    }
+  });
+};
+var authService = {
+  getAllUser,
+  updateUserStatus
+};
+
+// src/modules/Auth/auth.controller.ts
+var getAllUser2 = async (req, res, next) => {
+  try {
+    const { role } = req.query;
+    const result = await authService.getAllUser(role);
+    res.status(200).json({
+      message: "Users retrieved successfully",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var updateUserStatus2 = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { status } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+    const result = await authService.updateUserStatus(userId, status);
+    res.status(200).json({
+      success: true,
+      message: `User status updated to ${status} successfully`,
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var authController = {
+  getAllUser: getAllUser2,
+  updateUserStatus: updateUserStatus2
+};
+
+// src/modules/Auth/auth.router.ts
+var router6 = express6.Router();
+router6.get("/users", auth_default("ADMIN" /* ADMIN */), authController.getAllUser);
+router6.patch(
+  "/users/:userId",
+  auth_default("ADMIN" /* ADMIN */),
+  authController.updateUserStatus
+);
+var authRouter = router6;
+
 // src/app.ts
-var app = express6();
-app.use(express6.json());
+var app = express7();
+app.use(express7.json());
 app.use(
   cors({
     origin: process.env.APP_URL || "http://localhost:3000",
@@ -1716,6 +1812,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Prisma tutor management App!");
 });
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api/v1", authRouter);
 app.use("/api/v1", categoryRouter);
 app.use("/api/v1", tutorProfileRouter);
 app.use("/api/v1", tutorScheduleRouter);
