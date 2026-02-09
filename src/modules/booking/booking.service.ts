@@ -1,4 +1,4 @@
-import { Response } from 'express';
+
 import { Bookings, BookingStatus } from '../../../generated/prisma/client';
 import { prisma } from '../../lib/prisma';
 
@@ -122,6 +122,7 @@ const getBookingById = async (booking_id: string) => {
       }
     }, tutor_schedule: true , review: {
       select: {
+        id: true,
         rating: true,
         comment: true,
         isApproved: true
@@ -139,7 +140,7 @@ const updateBookingStatus = async (
     return await prisma.$transaction(async tx => {
       const booking = await tx.bookings.update({
         where: { id: bookingId },
-        data: { status: 'CANCELLED' },
+        data: { status: status},
       });
 
       await tx.tutorSchedule.update({

@@ -41,7 +41,7 @@ const getTutorReviews = async (
   next: NextFunction
 ) => {
   try {
-    const tutor_id = req.params.tutor_id;
+    const tutor_id = req?.user?.id;
     if (!tutor_id) {
       throw new Error('Tutor ID is required');
     }

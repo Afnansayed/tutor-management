@@ -1274,6 +1274,7 @@ var getBookingById = async (booking_id) => {
       }
     }, tutor_schedule: true, review: {
       select: {
+        id: true,
         rating: true,
         comment: true,
         isApproved: true
@@ -1287,7 +1288,7 @@ var updateBookingStatus = async (bookingId, status) => {
     return await prisma.$transaction(async (tx) => {
       const booking = await tx.bookings.update({
         where: { id: bookingId },
-        data: { status: "CANCELLED" }
+        data: { status }
       });
       await tx.tutorSchedule.update({
         where: { id: booking.schedule_id },
@@ -1483,14 +1484,23 @@ var createReview = async (data) => {
 };
 var getAllReviews = async () => {
   const result = await prisma.reviews.findMany({
-    where: {
-      isApproved: true
-    },
     include: {
       student: {
         select: {
           name: true,
           image: true
+        }
+      },
+      tutor: {
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
         }
       }
     },
@@ -1580,7 +1590,7 @@ var getAllReviews2 = async (req, res, next) => {
 };
 var getTutorReviews2 = async (req, res, next) => {
   try {
-    const tutor_id = req.params.tutor_id;
+    const tutor_id = req?.user?.id;
     if (!tutor_id) {
       throw new Error("Tutor ID is required");
     }
@@ -1666,7 +1676,7 @@ var reviewController = {
 var router5 = express5.Router();
 router5.post("/review", auth_default("STUDENT" /* STUDENT */), reviewController.createReview);
 router5.get("/review", reviewController.getAllReviews);
-router5.get("/review/:tutor_id", reviewController.getTutorReviews);
+router5.get("/review/tutor", auth_default("TUTOR" /* TUTOR */), reviewController.getTutorReviews);
 router5.patch(
   "/review/:review_id/status",
   auth_default("ADMIN" /* ADMIN */),

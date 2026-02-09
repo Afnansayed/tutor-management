@@ -8,7 +8,7 @@ router.post('/review', auth(UserRole.STUDENT), reviewController.createReview);
 
 router.get('/review', reviewController.getAllReviews);
 
-router.get('/review/:tutor_id', reviewController.getTutorReviews);
+router.get('/review/tutor',auth(UserRole.TUTOR), reviewController.getTutorReviews);
 
 router.patch(
   '/review/:review_id/status',

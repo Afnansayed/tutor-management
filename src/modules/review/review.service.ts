@@ -45,9 +45,6 @@ const createReview = async (
 
 const getAllReviews = async () => {
   const result = await prisma.reviews.findMany({
-    where: {
-      isApproved: true,
-    },
     include: {
       student: {
         select: {
@@ -55,6 +52,18 @@ const getAllReviews = async () => {
           image: true,
         },
       },
+      tutor: {
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      }
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -93,6 +102,7 @@ const updateReview = async (
   const isOwner = await prisma.reviews.findUnique({
     where: { id: review_id, student_id: student_id },
   });
+
 
   if (!isOwner) {
     throw new Error('You are not authorized to edit this review.');
