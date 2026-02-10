@@ -614,6 +614,14 @@ var getProfileById = async (profile_id) => {
           name: true,
           email: true
         }
+      },
+      reviews: {
+        select: {
+          id: true,
+          comment: true,
+          rating: true,
+          createdAt: true
+        }
       }
     }
   });
@@ -1744,9 +1752,54 @@ var updateUserStatus = async (userId, status) => {
     }
   });
 };
+var getMyProfile3 = async (user_id) => {
+  const result = await prisma.user.findUnique({
+    where: {
+      id: user_id
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      status: true,
+      createdAt: true
+    }
+  });
+  return result;
+};
+var updateMyProfile = async (user_id, payload) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      id: user_id
+    }
+  });
+  if (!isUserExists) {
+    throw new Error("User not found!");
+  }
+  const result = await prisma.user.update({
+    where: {
+      id: user_id
+    },
+    data: payload,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      status: true,
+      updatedAt: true
+    }
+  });
+  return result;
+};
 var authService = {
   getAllUser,
-  updateUserStatus
+  updateUserStatus,
+  getMyProfile: getMyProfile3,
+  updateMyProfile
 };
 
 // src/modules/Auth/auth.controller.ts
@@ -1784,14 +1837,59 @@ var updateUserStatus2 = async (req, res, next) => {
     next(error);
   }
 };
+var getMyProfile4 = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const result = await authService.getMyProfile(userId);
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "My profile retrieved successfully",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var updateMyProfile2 = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const payload = req.body;
+    const result = await authService.updateMyProfile(userId, payload);
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "Profile updated successfully",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 var authController = {
   getAllUser: getAllUser2,
-  updateUserStatus: updateUserStatus2
+  updateUserStatus: updateUserStatus2,
+  updateMyProfile: updateMyProfile2,
+  getMyProfile: getMyProfile4
 };
 
 // src/modules/Auth/auth.router.ts
 var router6 = express6.Router();
 router6.get("/users", auth_default("ADMIN" /* ADMIN */), authController.getAllUser);
+router6.get("/users/me", auth_default("STUDENT" /* STUDENT */), authController.getMyProfile);
+router6.patch(
+  "/users/me",
+  auth_default("STUDENT" /* STUDENT */),
+  authController.updateMyProfile
+);
 router6.patch(
   "/users/:userId",
   auth_default("ADMIN" /* ADMIN */),

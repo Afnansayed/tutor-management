@@ -171,6 +171,14 @@ const getProfileById = async (profile_id: string) => {
           email: true,
         },
       },
+      reviews: {
+        select: {
+          id: true,
+          comment: true,
+          rating: true,
+          createdAt: true,
+        },
+      },
     },
   });
   return result
