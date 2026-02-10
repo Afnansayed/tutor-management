@@ -42,7 +42,61 @@ const updateUserStatus = async (userId: string, status: Status) => {
   });
 };
 
+const getMyProfile = async (user_id: string) => {
+  const result = await prisma.user.findUnique({
+    where: {
+      id: user_id,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return result;
+};
+
+const updateMyProfile = async (
+  user_id: string,
+  payload: { name?: string; image?: string }
+) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      id: user_id,
+    },
+  });
+
+  if (!isUserExists) {
+    throw new Error('User not found!');
+  }
+
+  const result = await prisma.user.update({
+    where: {
+      id: user_id,
+    },
+    data: payload,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      status: true,
+      updatedAt: true,
+    },
+  });
+
+  return result;
+};
+
 export const authService = {
   getAllUser,
   updateUserStatus,
+  getMyProfile,
+  updateMyProfile,
 };

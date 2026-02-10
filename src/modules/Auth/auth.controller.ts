@@ -46,7 +46,56 @@ const updateUserStatus = async (
   }
 };
 
+const getMyProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    const result = await authService.getMyProfile(userId);
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'My profile retrieved successfully',
+      data: result,
+    });
+  } catch (error: any) {
+    console.log(error);
+    next(error);
+  }
+};
+
+const updateMyProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    const payload = req.body;
+    const result = await authService.updateMyProfile(userId, payload);
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Profile updated successfully',
+      data: result,
+    });
+  } catch (error: any) {
+    console.log(error);
+    next(error);
+  }
+};
+
 export const authController = {
   getAllUser,
   updateUserStatus,
+  updateMyProfile,
+  getMyProfile,
 };
