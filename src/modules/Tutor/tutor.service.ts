@@ -177,6 +177,13 @@ const getProfileById = async (profile_id: string) => {
           comment: true,
           rating: true,
           createdAt: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
         },
       },
     },

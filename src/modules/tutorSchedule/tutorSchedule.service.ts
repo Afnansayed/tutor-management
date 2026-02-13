@@ -22,6 +22,14 @@ const getMySchedule = async (user_id: string) => {
   });
   return result;
 };
+const getScheduleByTutorUserId = async (user_id: string) => {
+  const result = await prisma.tutorSchedule.findMany({
+    where: {
+      tutor_id: user_id,
+    },
+  });
+  return result;
+};
 
 const getTutorScheduleById = async (scheduleId: string) => {
   return await prisma.tutorSchedule.findUnique({
@@ -41,8 +49,10 @@ const updateTutorSchedule = async (
   });
 };
 
-
-const updateTutorScheduleAvailability = async (scheduleId: string, isAvailable: boolean) => {
+const updateTutorScheduleAvailability = async (
+  scheduleId: string,
+  isAvailable: boolean
+) => {
   return await prisma.tutorSchedule.update({
     where: { id: scheduleId },
     data: { isAvailable },
@@ -62,4 +72,5 @@ export const tutorScheduleService = {
   updateTutorSchedule,
   deleteTutorSchedule,
   updateTutorScheduleAvailability,
+  getScheduleByTutorUserId,
 };

@@ -17,9 +17,9 @@ router.get(
 
 router.get(
   '/tutor-schedule/:scheduleId',
-  auth(UserRole.TUTOR),
   tutorScheduleController.getTutorScheduleById
 );
+
 router.patch(
   '/tutor-schedule/:scheduleId',
   auth(UserRole.TUTOR),
@@ -29,6 +29,11 @@ router.patch(
   '/tutor-schedule/:scheduleId/availability',
   auth(UserRole.TUTOR),
   tutorScheduleController.updateTutorScheduleAvailability
+);
+
+router.get(
+  '/tutor-schedule/:tutorUserId/user',
+  tutorScheduleController.getScheduleByTutorUserId
 );
 
 router.delete(

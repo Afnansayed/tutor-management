@@ -10,13 +10,17 @@ import { bookingRouter } from './modules/booking/booking.router';
 import { reviewRouter } from './modules/review/review.router';
 import { notFound } from './middleware/notFound';
 import { authRouter } from './modules/Auth/auth.router';
+import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 
+app.set('trust proxy', 1);
+
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.APP_URL || 'http://localhost:3000',
+    origin: ['http://localhost:3000', process.env.APP_URL!],
     credentials: true,
   })
 );

@@ -620,7 +620,14 @@ var getProfileById = async (profile_id) => {
           id: true,
           comment: true,
           rating: true,
-          createdAt: true
+          createdAt: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              image: true
+            }
+          }
         }
       }
     }
@@ -997,6 +1004,14 @@ var getMySchedule = async (user_id) => {
   });
   return result;
 };
+var getScheduleByTutorUserId = async (user_id) => {
+  const result = await prisma.tutorSchedule.findMany({
+    where: {
+      tutor_id: user_id
+    }
+  });
+  return result;
+};
 var getTutorScheduleById = async (scheduleId) => {
   return await prisma.tutorSchedule.findUnique({
     where: { id: scheduleId }
@@ -1025,7 +1040,8 @@ var tutorScheduleService = {
   getTutorScheduleById,
   updateTutorSchedule,
   deleteTutorSchedule,
-  updateTutorScheduleAvailability
+  updateTutorScheduleAvailability,
+  getScheduleByTutorUserId
 };
 
 // src/modules/tutorSchedule/tutorSchedule.controller.ts
@@ -1053,6 +1069,24 @@ var getMySchedule2 = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const result = await tutorScheduleService.getMySchedule(tutorId);
+    res.status(201).json({
+      message: "Tutor schedule retrieved successfully",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var getScheduleByTutorUserId2 = async (req, res, next) => {
+  try {
+    const tutorUserId = req?.params?.tutorUserId;
+    if (!tutorUserId) {
+      return res.status(401).json({ message: "Tutor user id is required" });
+    }
+    const result = await tutorScheduleService.getMySchedule(
+      tutorUserId
+    );
     res.status(201).json({
       message: "Tutor schedule retrieved successfully",
       data: result
@@ -1138,7 +1172,8 @@ var tutorScheduleController = {
   getTutorScheduleById: getTutorScheduleById2,
   updateTutorSchedule: updateTutorSchedule2,
   deleteTutorSchedule: deleteTutorSchedule2,
-  updateTutorScheduleAvailability: updateTutorScheduleAvailability2
+  updateTutorScheduleAvailability: updateTutorScheduleAvailability2,
+  getScheduleByTutorUserId: getScheduleByTutorUserId2
 };
 
 // src/modules/tutorSchedule/tutorSchedule.router.ts
@@ -1155,7 +1190,6 @@ router3.get(
 );
 router3.get(
   "/tutor-schedule/:scheduleId",
-  auth_default("TUTOR" /* TUTOR */),
   tutorScheduleController.getTutorScheduleById
 );
 router3.patch(
@@ -1168,6 +1202,10 @@ router3.patch(
   auth_default("TUTOR" /* TUTOR */),
   tutorScheduleController.updateTutorScheduleAvailability
 );
+router3.get(
+  "/tutor-schedule/:tutorUserId/user",
+  tutorScheduleController.getScheduleByTutorUserId
+);
 router3.delete(
   "/tutor-schedule/:scheduleId",
   auth_default("TUTOR" /* TUTOR */, "ADMIN" /* ADMIN */),
@@ -1178,9 +1216,19 @@ var tutorScheduleRouter = router3;
 // src/modules/booking/booking.router.ts
 import express4 from "express";
 
+// src/helpers/parseTime.ts
+var parseTime = (timeData) => {
+  const date = new Date(timeData);
+  if (isNaN(date.getTime())) {
+    return (/* @__PURE__ */ new Date(`1970-01-01T${timeData}`)).getTime();
+  }
+  return date.getTime();
+};
+var parseTime_default = parseTime;
+
 // src/modules/booking/booking.service.ts
 var createBooking = async (data) => {
-  const { tutor_id, schedule_id, booking_date } = data;
+  const { tutor_id, schedule_id, booking_date, student_id } = data;
   const scheduleExists = await prisma.tutorSchedule.findUnique({
     where: { id: schedule_id },
     include: { tutor: true }
@@ -1196,8 +1244,8 @@ var createBooking = async (data) => {
   if (booking_date < /* @__PURE__ */ new Date()) {
     throw new Error("The booking date cannot be in the past.");
   }
-  const startTime = new Date(scheduleExists.start_time).getTime();
-  const endTime = new Date(scheduleExists.end_time).getTime();
+  const startTime = parseTime_default(scheduleExists.start_time);
+  const endTime = parseTime_default(scheduleExists.end_time);
   const totalHours = (endTime - startTime) / (1e3 * 60 * 60);
   if (totalHours <= 0) {
     throw new Error(
@@ -1208,9 +1256,18 @@ var createBooking = async (data) => {
   const result = await prisma.$transaction(async (tx) => {
     const newBooking = await tx.bookings.create({
       data: {
-        ...data,
-        total_price: Number(calculatedTotalPrice.toFixed(2)),
-        session_link: `https://meet.google.com/dqb-rxmh-xgw`
+        booking_date: new Date(booking_date),
+        total_price: Number(calculatedTotalPrice) || 0,
+        session_link: `https://meet.google.com/dqb-rxmh-xgw`,
+        tutor: {
+          connect: { user_id: tutor_id }
+        },
+        student: {
+          connect: { id: student_id }
+        },
+        tutor_schedule: {
+          connect: { id: schedule_id }
+        }
       }
     });
     await tx.tutorSchedule.update({
@@ -1223,17 +1280,21 @@ var createBooking = async (data) => {
 };
 var getAllBookings = async () => {
   const result = await prisma.bookings.findMany({
-    include: { student: true, tutor_schedule: true, tutor: {
-      select: {
-        profile_picture: true,
-        user: {
-          select: {
-            name: true,
-            email: true
+    include: {
+      student: true,
+      tutor_schedule: true,
+      tutor: {
+        select: {
+          profile_picture: true,
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
           }
         }
       }
-    } },
+    },
     orderBy: { createdAt: "desc" }
   });
   return result;
@@ -1270,24 +1331,29 @@ var getStudentBookings = async (student_id) => {
 var getBookingById = async (booking_id) => {
   const result = await prisma.bookings.findUnique({
     where: { id: booking_id },
-    include: { student: true, tutor: {
-      select: {
-        profile_picture: true,
-        user: {
-          select: {
-            name: true,
-            email: true
+    include: {
+      student: true,
+      tutor: {
+        select: {
+          profile_picture: true,
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
           }
         }
+      },
+      tutor_schedule: true,
+      review: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          isApproved: true
+        }
       }
-    }, tutor_schedule: true, review: {
-      select: {
-        id: true,
-        rating: true,
-        comment: true,
-        isApproved: true
-      }
-    } }
+    }
   });
   return result;
 };
@@ -1898,11 +1964,14 @@ router6.patch(
 var authRouter = router6;
 
 // src/app.ts
+import cookieParser from "cookie-parser";
 var app = express7();
+app.set("trust proxy", 1);
 app.use(express7.json());
+app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.APP_URL || "http://localhost:3000",
+    origin: ["http://localhost:3000", process.env.APP_URL],
     credentials: true
   })
 );

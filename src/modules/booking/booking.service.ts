@@ -1,5 +1,5 @@
-
 import { Bookings, BookingStatus } from '../../../generated/prisma/client';
+import parseTime from '../../helpers/parseTime';
 import { prisma } from '../../lib/prisma';
 
 const createBooking = async (
@@ -8,7 +8,7 @@ const createBooking = async (
     'id' | 'created_at' | 'updated_at' | 'total_price' | 'status'
   >
 ) => {
-  const { tutor_id, schedule_id, booking_date } = data;
+  const { tutor_id, schedule_id, booking_date, student_id } = data;
   const scheduleExists = await prisma.tutorSchedule.findUnique({
     where: { id: schedule_id },
     include: { tutor: true },
@@ -28,8 +28,8 @@ const createBooking = async (
     throw new Error('The booking date cannot be in the past.');
   }
 
-  const startTime = new Date(scheduleExists.start_time).getTime();
-  const endTime = new Date(scheduleExists.end_time).getTime();
+  const startTime = parseTime(scheduleExists.start_time);
+  const endTime = parseTime(scheduleExists.end_time);
   const totalHours = (endTime - startTime) / (1000 * 60 * 60);
 
   if (totalHours <= 0) {
@@ -37,16 +37,24 @@ const createBooking = async (
       'Invalid schedule times: end time must be after start time.'
     );
   }
-
   const calculatedTotalPrice =
     (scheduleExists.tutor.hourly_rate || 0) * totalHours;
 
   const result = await prisma.$transaction(async tx => {
     const newBooking = await tx.bookings.create({
       data: {
-        ...data,
-        total_price: Number(calculatedTotalPrice.toFixed(2)),
+        booking_date: new Date(booking_date),
+        total_price: Number(calculatedTotalPrice) || 0,
         session_link: `https://meet.google.com/dqb-rxmh-xgw`,
+        tutor: {
+          connect: { user_id: tutor_id },
+        },
+        student: {
+          connect: { id: student_id },
+        },
+        tutor_schedule: {
+          connect: { id: schedule_id },
+        },
       },
     });
     await tx.tutorSchedule.update({
@@ -61,17 +69,21 @@ const createBooking = async (
 
 const getAllBookings = async () => {
   const result = await prisma.bookings.findMany({
-    include: { student: true, tutor_schedule: true , tutor: {
-      select: {
-        profile_picture: true,
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
-    }, },
+    include: {
+      student: true,
+      tutor_schedule: true,
+      tutor: {
+        select: {
+          profile_picture: true,
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' },
   });
   return result;
@@ -88,17 +100,17 @@ const getTutorBookings = async (tutor_id: string) => {
 const getStudentBookings = async (student_id: string) => {
   const result = await prisma.bookings.findMany({
     where: { student_id },
-    include: { 
+    include: {
       tutor: {
         select: {
           profile_picture: true,
           user: {
             select: {
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       },
       tutor_schedule: true,
     },
@@ -109,25 +121,30 @@ const getStudentBookings = async (student_id: string) => {
 
 const getBookingById = async (booking_id: string) => {
   const result = await prisma.bookings.findUnique({
-    where: {id: booking_id },
-    include: { student: true, tutor: {
-      select: {
-        profile_picture: true,
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
-    }, tutor_schedule: true , review: {
-      select: {
-        id: true,
-        rating: true,
-        comment: true,
-        isApproved: true
-      }
-    } }
+    where: { id: booking_id },
+    include: {
+      student: true,
+      tutor: {
+        select: {
+          profile_picture: true,
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+      tutor_schedule: true,
+      review: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          isApproved: true,
+        },
+      },
+    },
   });
   return result;
 };
@@ -140,7 +157,7 @@ const updateBookingStatus = async (
     return await prisma.$transaction(async tx => {
       const booking = await tx.bookings.update({
         where: { id: bookingId },
-        data: { status: status},
+        data: { status: status },
       });
 
       await tx.tutorSchedule.update({
@@ -164,5 +181,5 @@ export const bookingService = {
   getTutorBookings,
   getStudentBookings,
   updateBookingStatus,
-  getBookingById
+  getBookingById,
 };

@@ -44,6 +44,28 @@ const getMySchedule = async (
     next(error);
   }
 };
+const getScheduleByTutorUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const tutorUserId = req?.params?.tutorUserId;
+    if (!tutorUserId) {
+      return res.status(401).json({ message: 'Tutor user id is required' });
+    }
+    const result = await tutorScheduleService.getMySchedule(
+      tutorUserId as string
+    );
+    res.status(201).json({
+      message: 'Tutor schedule retrieved successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
 const getTutorScheduleById = async (
   req: Request,
@@ -140,4 +162,5 @@ export const tutorScheduleController = {
   updateTutorSchedule,
   deleteTutorSchedule,
   updateTutorScheduleAvailability,
+  getScheduleByTutorUserId,
 };
