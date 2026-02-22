@@ -9,7 +9,11 @@ router.post(
   auth(UserRole.TUTOR),
   tutorController.createTutorProfile
 );
-router.get('/tutor-profile', tutorController.getAllTutorProfiles);
+router.get(
+  '/tutor-profile',
+  auth(UserRole.TUTOR, UserRole.ADMIN, UserRole.STUDENT),
+  tutorController.getAllTutorProfiles
+);
 router.get(
   '/tutor-profile/me',
   auth(UserRole.TUTOR),

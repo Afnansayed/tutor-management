@@ -19,7 +19,38 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql', // or "mysql", "postgresql", ...etc
   }),
-  trustedOrigins: [process.env.APP_URL || 'http://localhost:3000'],
+  trustedOrigins: async (request) => {
+    const origin = request?.headers.get("origin");
+
+    const allowedOrigins = [
+      process.env.APP_URL,
+      process.env.BETTER_AUTH_URL,
+      process.env.PROD_APP_URL,
+      "http://localhost:3000",
+      "http://localhost:4000",
+      "http://localhost:5000",
+      "https://tutor-management-client-two.vercel.app",
+      "https://skilbridge.vercel.app",
+    ].filter(Boolean);
+
+    // Check if origin matches allowed origins or Vercel pattern
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin)
+    ) {
+      return [origin];
+    }
+
+    return [];
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 minutes
+    },
+  },
+ 
   user: {
     additionalFields: {
       role: {

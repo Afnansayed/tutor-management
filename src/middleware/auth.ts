@@ -28,6 +28,8 @@ const auth = (...roles: UserRole[]) => {
       headers: req.headers as any,
     });
 
+    console.log({ session });
+
     if (!session || !session.user) {
       return res.status(401).json({
         success: false,

@@ -274,7 +274,30 @@ var auth = betterAuth({
     provider: "postgresql"
     // or "mysql", "postgresql", ...etc
   }),
-  trustedOrigins: [process.env.APP_URL || "http://localhost:3000"],
+  trustedOrigins: async (request) => {
+    const origin = request?.headers.get("origin");
+    const allowedOrigins2 = [
+      process.env.APP_URL,
+      process.env.BETTER_AUTH_URL,
+      process.env.PROD_APP_URL,
+      "http://localhost:3000",
+      "http://localhost:4000",
+      "http://localhost:5000",
+      "https://tutor-management-client-two.vercel.app",
+      "https://skilbridge.vercel.app"
+    ].filter(Boolean);
+    if (!origin || allowedOrigins2.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin)) {
+      return [origin];
+    }
+    return [];
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60
+      // 5 minutes
+    }
+  },
   user: {
     additionalFields: {
       role: {
@@ -810,6 +833,7 @@ var auth2 = (...roles) => {
     const session = await auth.api.getSession({
       headers: req.headers
     });
+    console.log({ session });
     if (!session || !session.user) {
       return res.status(401).json({
         success: false,
@@ -847,7 +871,11 @@ router.post(
   auth_default("TUTOR" /* TUTOR */),
   tutorController.createTutorProfile
 );
-router.get("/tutor-profile", tutorController.getAllTutorProfiles);
+router.get(
+  "/tutor-profile",
+  auth_default("TUTOR" /* TUTOR */, "ADMIN" /* ADMIN */, "STUDENT" /* STUDENT */),
+  tutorController.getAllTutorProfiles
+);
 router.get(
   "/tutor-profile/me",
   auth_default("TUTOR" /* TUTOR */),
@@ -1966,15 +1994,33 @@ var authRouter = router6;
 // src/app.ts
 import cookieParser from "cookie-parser";
 var app = express7();
-app.set("trust proxy", 1);
-app.use(express7.json());
-app.use(cookieParser());
+var allowedOrigins = [
+  process.env.APP_URL || "http://localhost:3000",
+  process.env.PROD_APP_URL,
+  // Production frontend URL
+  "http://localhost:3000",
+  "http://localhost:4000",
+  "http://localhost:5000"
+].filter(Boolean);
 app.use(
   cors({
-    origin: ["http://localhost:3000", process.env.APP_URL],
-    credentials: true
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/tutor-management-client-two.*\.vercel\.app$/.test(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"]
   })
 );
+app.use(express7.json());
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Welcome to the Prisma tutor management App!");
 });
