@@ -873,7 +873,6 @@ router.post(
 );
 router.get(
   "/tutor-profile",
-  auth_default("TUTOR" /* TUTOR */, "ADMIN" /* ADMIN */, "STUDENT" /* STUDENT */),
   tutorController.getAllTutorProfiles
 );
 router.get(
@@ -999,7 +998,6 @@ router2.post(
 );
 router2.get(
   "/category",
-  auth_default("ADMIN" /* ADMIN */, "TUTOR" /* TUTOR */),
   categoryController.getCategory
 );
 router2.get(

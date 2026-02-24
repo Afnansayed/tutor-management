@@ -11,7 +11,6 @@ router.post(
 );
 router.get(
   '/tutor-profile',
-  auth(UserRole.TUTOR, UserRole.ADMIN, UserRole.STUDENT),
   tutorController.getAllTutorProfiles
 );
 router.get(

@@ -12,7 +12,6 @@ router.post(
 
 router.get(
   '/category',
-  auth(UserRole.ADMIN, UserRole.TUTOR),
   categoryController.getCategory
 );
 
