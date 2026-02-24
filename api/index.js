@@ -320,7 +320,7 @@ var auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+      const verificationUrl = `${process.env.PROD_APP_URL}/verify-email?token=${token}`;
       try {
         const info = await transporter.sendMail({
           from: '"Afnan Sayed Razin" <afnansyed1973@gamil.com>',
