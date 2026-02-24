@@ -5,7 +5,7 @@ var __export = (target, all) => {
 };
 
 // src/app.ts
-import express7 from "express";
+import express8 from "express";
 import { toNodeHandler } from "better-auth/node";
 
 // src/lib/auth.ts
@@ -247,6 +247,13 @@ var NullsOrder = {
   last: "last"
 };
 var defineExtension = runtime2.Extensions.defineExtension;
+
+// generated/prisma/enums.ts
+var BookingStatus = {
+  CONFIRMED: "CONFIRMED",
+  CANCELLED: "CANCELLED",
+  COMPLETED: "COMPLETED"
+};
 
 // generated/prisma/client.ts
 globalThis["__dirname"] = path.dirname(fileURLToPath(import.meta.url));
@@ -833,7 +840,6 @@ var auth2 = (...roles) => {
     const session = await auth.api.getSession({
       headers: req.headers
     });
-    console.log({ session });
     if (!session || !session.user) {
       return res.status(401).json({
         success: false,
@@ -1991,7 +1997,92 @@ var authRouter = router6;
 
 // src/app.ts
 import cookieParser from "cookie-parser";
-var app = express7();
+
+// src/modules/analytics/analytics.route.ts
+import express7 from "express";
+
+// src/modules/analytics/analytics.service.ts
+var getAdminAnalyticsSummary = async () => {
+  const totalStudents = await prisma.user.count({
+    where: { role: "STUDENT" /* STUDENT */ }
+  });
+  const totalTutors = await prisma.user.count({
+    where: { role: "TUTOR" /* TUTOR */ }
+  });
+  const totalBookings = await prisma.bookings.count();
+  const completedBookings = await prisma.bookings.aggregate({
+    where: { status: BookingStatus.COMPLETED },
+    _sum: { total_price: true }
+  });
+  const totalRevenue = completedBookings._sum.total_price || 0;
+  const recentBookings = await prisma.bookings.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      student: {
+        select: { id: true, name: true, email: true }
+      },
+      tutor: {
+        select: {
+          id: true,
+          user_id: true,
+          user: {
+            select: { name: true, email: true }
+          }
+        }
+      }
+    }
+  });
+  const bookingStatusGroups = await prisma.bookings.groupBy({
+    by: ["status"],
+    _count: { status: true }
+  });
+  const bookingStatus = bookingStatusGroups.reduce((acc, curr) => {
+    acc[curr.status] = curr._count.status;
+    return acc;
+  }, {});
+  return {
+    totalStudents,
+    totalTutors,
+    totalBookings,
+    totalRevenue,
+    recentBookings,
+    bookingStatus
+  };
+};
+var AnalyticsService = {
+  getAdminAnalyticsSummary
+};
+
+// src/modules/analytics/analytics.controller.ts
+var getAnalytics = async (req, res, next) => {
+  try {
+    const result = await AnalyticsService.getAdminAnalyticsSummary();
+    res.status(200).json({
+      success: true,
+      message: "Admin analytics fetched successfully!",
+      data: result
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+var AnalyticsController = {
+  getAnalytics
+};
+
+// src/modules/analytics/analytics.route.ts
+var router7 = express7.Router();
+router7.get(
+  "/analytics",
+  auth_default("ADMIN" /* ADMIN */),
+  AnalyticsController.getAnalytics
+);
+var analyticsRouter = router7;
+
+// src/app.ts
+var app = express8();
 var allowedOrigins = [
   process.env.APP_URL || "http://localhost:3000",
   process.env.PROD_APP_URL,
@@ -2017,7 +2108,7 @@ app.use(
     exposedHeaders: ["Set-Cookie"]
   })
 );
-app.use(express7.json());
+app.use(express8.json());
 app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Welcome to the Prisma tutor management App!");
@@ -2029,6 +2120,7 @@ app.use("/api/v1", tutorProfileRouter);
 app.use("/api/v1", tutorScheduleRouter);
 app.use("/api/v1", bookingRouter);
 app.use("/api/v1", reviewRouter);
+app.use("/api/v1", analyticsRouter);
 app.use(globalErrorHandler_default);
 app.use(notFound);
 var app_default = app;

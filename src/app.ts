@@ -11,6 +11,7 @@ import { reviewRouter } from './modules/review/review.router';
 import { notFound } from './middleware/notFound';
 import { authRouter } from './modules/Auth/auth.router';
 import cookieParser from 'cookie-parser';
+import { analyticsRouter } from './modules/analytics/analytics.route';
 
 const app: Application = express();
 
@@ -68,6 +69,8 @@ app.use('/api/v1', tutorScheduleRouter);
 app.use('/api/v1', bookingRouter);
 // review booking
 app.use('/api/v1', reviewRouter);
+// analytics
+app.use('/api/v1', analyticsRouter);
 
 // error handler
 app.use(errorHandler);
