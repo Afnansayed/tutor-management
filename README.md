@@ -185,7 +185,7 @@ Make sure to add all your environment variables in the platform's dashboard befo
 ## 🔗 Related
 
 - 🖥️ **Frontend Repository** → [tutor-booking-frontend](https://github.com/Afnansayed/tutorflow-client.git)
-- 🌐 **Live Client App** → [tutor-management-client-two.vercel.app](https://tutor-management-client-two.vercel.app)
+- 🌐 **Live Client App** → [tutor-management-live](https://tutor-management-client-two.vercel.app)
 
 ---
 
