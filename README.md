@@ -184,7 +184,7 @@ Make sure to add all your environment variables in the platform's dashboard befo
 
 ## 🔗 Related
 
-- 🖥️ **Frontend Repository** → [tutor-booking-frontend](https://github.com/your-username/tutor-booking-frontend)
+- 🖥️ **Frontend Repository** → [tutor-booking-frontend](https://github.com/Afnansayed/tutorflow-client.git)
 - 🌐 **Live Client App** → [tutor-management-client-two.vercel.app](https://tutor-management-client-two.vercel.app)
 
 ---
@@ -201,15 +201,9 @@ Contributions are welcome! To get started:
 
 ---
 
-## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
 
 <div align="center">
-
-Built with ❤️ by [Your Name / Team Name](https://github.com/your-username)
 
 ⭐ If this project helped you, please give it a star!
 
