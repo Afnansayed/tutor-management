@@ -78,12 +78,12 @@ APP_PASS=your_gmail_app_password_here
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/your-username/tutor-booking-server.git
+git clone https://github.com/Afnansayed/tutor-management.git
 ```
 
 **2. Navigate into the project**
 ```bash
-cd tutor-booking-server
+cd tutor-management
 ```
 
 **3. Install dependencies**
